@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "HTTP Cat Toast",
+  "version": "0.1.0",
+  "description": "Shows a http.cat toast in the bottom-right whenever a network request in the tab fails.",
+  "permissions": ["webRequest"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["toast.css"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon128.png",
+    "48": "icons/icon128.png",
+    "128": "icons/icon128.png"
+  }
+}
