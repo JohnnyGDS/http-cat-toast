@@ -11,6 +11,9 @@ const IGNORED_NET_ERRORS = new Set([
 ]);
 
 const COLLECTABLE_CODES = new Set([
+  100, 101, 102, 103,
+  200, 201, 202, 203, 204, 206, 207, 208, 226,
+  301, 302, 303, 304, 307, 308,
   400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414,
   415, 416, 417, 418, 420, 421, 422, 423, 424, 425, 426, 428, 429, 431, 444,
   450, 451, 497, 498, 499,
@@ -20,11 +23,15 @@ const COLLECTABLE_CODES = new Set([
 
 function recordCode(code) {
   if (!COLLECTABLE_CODES.has(code)) return;
-  chrome.storage.local.get({ seenCodes: [] }, (data) => {
-    const seen = new Set(data.seenCodes);
-    if (seen.has(code)) return;
-    seen.add(code);
-    chrome.storage.local.set({ seenCodes: [...seen] });
+  const today = new Date().toISOString().slice(0, 10);
+  chrome.storage.local.get({ seenCodes: {} }, (data) => {
+    // Migrate old array format to object format
+    const seen = Array.isArray(data.seenCodes)
+      ? Object.fromEntries(data.seenCodes.map((c) => [c, null]))
+      : { ...data.seenCodes };
+    if (seen[code]) return;
+    seen[code] = today;
+    chrome.storage.local.set({ seenCodes: seen });
   });
 }
 
@@ -35,8 +42,8 @@ function notifyTab(tabId, code) {
 
 chrome.webRequest.onCompleted.addListener(
   (details) => {
+    recordCode(details.statusCode);
     if (details.statusCode >= 400) {
-      recordCode(details.statusCode);
       notifyTab(details.tabId, details.statusCode);
     }
   },

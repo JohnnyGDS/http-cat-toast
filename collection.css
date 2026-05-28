@@ -181,3 +181,12 @@ section {
   position: absolute;
   bottom: 0;
 }
+
+.card__date {
+  font-size: 0.65rem;
+  color: #555;
+  letter-spacing: 0.03em;
+  padding-bottom: 6px;
+  text-align: center;
+  width: 100%;
+}

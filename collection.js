@@ -1,5 +1,17 @@
 const CATALOGUE = [
   {
+    group: "1xx Informational",
+    codes: [100, 101, 102, 103],
+  },
+  {
+    group: "2xx Success",
+    codes: [200, 201, 202, 203, 204, 206, 207, 208, 226],
+  },
+  {
+    group: "3xx Redirection",
+    codes: [301, 302, 303, 304, 307, 308],
+  },
+  {
     group: "4xx Client Errors",
     codes: [
       400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413,
@@ -18,7 +30,7 @@ const CATALOGUE = [
 
 const TOTAL_CODES = CATALOGUE.reduce((n, g) => n + g.codes.length, 0);
 
-function makeSeenCard(code) {
+function makeSeenCard(code, date) {
   const card = document.createElement("div");
   card.className = "card card--seen";
 
@@ -32,6 +44,14 @@ function makeSeenCard(code) {
   label.textContent = code;
 
   card.append(img, label);
+
+  if (date) {
+    const dateEl = document.createElement("span");
+    dateEl.className = "card__date";
+    dateEl.textContent = date;
+    card.append(dateEl);
+  }
+
   return card;
 }
 
@@ -51,8 +71,13 @@ function makeUnseenCard(code) {
   return card;
 }
 
-function renderPage(seen) {
-  const totalSeen = seen.size;
+function renderPage(seenCodes) {
+  // Support both old array format and new object format
+  const seen = Array.isArray(seenCodes)
+    ? Object.fromEntries(seenCodes.map((c) => [c, null]))
+    : seenCodes;
+
+  const totalSeen = Object.keys(seen).length;
   const pct = TOTAL_CODES > 0 ? (totalSeen / TOTAL_CODES) * 100 : 0;
 
   document.getElementById("progress-bar-fill").style.width = `${pct}%`;
@@ -63,7 +88,7 @@ function renderPage(seen) {
   app.innerHTML = "";
 
   for (const { group, codes } of CATALOGUE) {
-    const groupSeen = codes.filter((c) => seen.has(c)).length;
+    const groupSeen = codes.filter((c) => c in seen).length;
 
     const section = document.createElement("section");
 
@@ -83,7 +108,9 @@ function renderPage(seen) {
     grid.className = "grid";
 
     for (const code of codes) {
-      grid.appendChild(seen.has(code) ? makeSeenCard(code) : makeUnseenCard(code));
+      grid.appendChild(
+        code in seen ? makeSeenCard(code, seen[code]) : makeUnseenCard(code),
+      );
     }
 
     section.append(header, grid);
@@ -91,12 +118,12 @@ function renderPage(seen) {
   }
 }
 
-chrome.storage.local.get({ seenCodes: [] }, ({ seenCodes }) => {
-  renderPage(new Set(seenCodes));
+chrome.storage.local.get({ seenCodes: {} }, ({ seenCodes }) => {
+  renderPage(seenCodes);
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.seenCodes) {
-    renderPage(new Set(changes.seenCodes.newValue ?? []));
+    renderPage(changes.seenCodes.newValue ?? {});
   }
 });
