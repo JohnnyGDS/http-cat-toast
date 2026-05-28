@@ -31,8 +31,11 @@ const CATALOGUE = [
 const TOTAL_CODES = CATALOGUE.reduce((n, g) => n + g.codes.length, 0);
 
 function makeSeenCard(code, date) {
-  const card = document.createElement("div");
+  const card = document.createElement("a");
   card.className = "card card--seen";
+  card.href = `https://http.cat/${code}`;
+  card.target = "_blank";
+  card.rel = "noopener noreferrer";
 
   const img = document.createElement("img");
   img.src = `https://http.cat/${code}`;
