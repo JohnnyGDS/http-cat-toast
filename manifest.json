@@ -3,7 +3,11 @@
   "name": "HTTP Cat Toast",
   "version": "0.1.0",
   "description": "Shows a http.cat toast in the bottom-right whenever a network request in the tab fails.",
-  "permissions": ["webRequest"],
+  "permissions": ["webRequest", "storage"],
+  "action": {
+    "default_icon": { "128": "icons/icon128.png" },
+    "default_title": "HTTP Cat Collection"
+  },
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
