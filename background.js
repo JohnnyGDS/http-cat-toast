@@ -43,7 +43,7 @@ function notifyTab(tabId, code) {
 chrome.webRequest.onCompleted.addListener(
   (details) => {
     recordCode(details.statusCode);
-    if (details.statusCode >= 400) {
+    if (details.statusCode >= 300) {
       notifyTab(details.tabId, details.statusCode);
     }
   },
